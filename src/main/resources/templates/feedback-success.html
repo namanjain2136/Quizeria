@@ -1,18 +1,40 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
 <head>
-    <title>Feedback Submitted</title>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; text-align: center; margin-top: 80px; }
-        h2 { color: #2d6cdf; }
-        .btn { margin: 20px; padding: 10px 24px; font-size: 1em; border-radius: 8px; border: none; background: #2d6cdf; color: #fff; cursor: pointer; }
-        .btn:hover { background: #1b4fa2; }
-    </style>
+    <title layout:fragment="title">Feedback Submitted - Quizeria</title>
 </head>
 <body>
-    <h2 th:text="${message}">Thank you for your feedback!</h2>
-    <a href="/student"><button class="btn">Back to Quizzes</button></a>
-    <a href="/"><button class="btn">Home</button></a>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            
+                            <h2 class="card-title text-success mb-3" th:text="${message}">Thank you for your feedback!</h2>
+                            
+                            <p class="text-muted mb-4">
+                                Your feedback has been successfully submitted and will help us improve the quiz experience.
+                            </p>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="/user" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left me-2"></i>Back to Quizzes
+                                </a>
+                                <a href="/" class="btn btn-outline-primary">
+                                    <i class="bi bi-house me-2"></i>Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title layout:fragment="title" th:text="${isEdit ? 'Edit Quiz - Quizeria' : 'Add Quiz - Quizeria'}">Quiz Form - Quizeria</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="card-title mb-0">
+                            <i class="bi bi-journal-plus me-2" th:if="${!isEdit}"></i>
+                            <i class="bi bi-pencil-square me-2" th:if="${isEdit}"></i>
+                            <span th:text="${isEdit ? 'Edit Quiz' : 'Add New Quiz'}">Quiz Form</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${isEdit ? '/admin/quiz/' + quiz.id + '/edit' : '/admin/add'}" 
+                              th:object="${quiz}" method="post">
+                              
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-bold">
+                                    <i class="bi bi-card-text me-1"></i>Quiz Title
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       th:field="*{title}" 
+                                       id="title" 
+                                       placeholder="Enter quiz title..." 
+                                       required>
+                                <div class="form-text">
+                                    Choose a descriptive title for your quiz
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-bold">
+                                    <i class="bi bi-text-paragraph me-1"></i>Quiz Description
+                                </label>
+                                <textarea class="form-control" 
+                                          th:field="*{description}" 
+                                          id="description" 
+                                          rows="4" 
+                                          placeholder="Enter a brief description of what this quiz covers..."></textarea>
+                                <div class="form-text">
+                                    Provide a brief overview to help students understand what this quiz covers
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/admin" class="btn btn-outline-secondary me-md-2">
+                                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-check-lg me-1"></i>
+                                    <span th:text="${isEdit ? 'Save Changes' : 'Create Quiz'}">Submit</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Success message for edit mode -->
+                <div th:if="${isEdit}" class="alert alert-info mt-3" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Tip:</strong> After updating the quiz details, you can 
+                    <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions'}" class="alert-link">
+                        manage questions
+                    </a> for this quiz.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

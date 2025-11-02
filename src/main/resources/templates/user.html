@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Panel - Quizeria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --light-gradient: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 50%, rgba(240, 147, 251, 0.1) 100%);
+            --card-shadow: 0 10px 40px rgba(102, 126, 234, 0.15);
+            --hover-shadow: 0 20px 60px rgba(118, 75, 162, 0.2);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape-1 {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 50%;
+            top: 70%;
+            right: 15%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        .shape-3 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, rgba(118, 75, 162, 0.1), rgba(240, 147, 251, 0.1));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            bottom: 15%;
+            left: 15%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 2rem;
+            color: white !important;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 10px 20px !important;
+            margin: 0 6px;
+            backdrop-filter: blur(10px);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-title {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary-color);
+            font-weight: 900;
+            font-size: 3rem;
+            text-align: center;
+            margin: 3rem 0 2rem 0;
+            letter-spacing: -1px;
+            position: relative;
+            padding: 2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-title::after {
+            content: '';
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .quiz-card, .card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quiz-card::before, .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 24px;
+        }
+        
+        .quiz-card:hover::before, .card:hover::before {
+            opacity: 0.08;
+        }
+        
+        .quiz-card:hover, .card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.15);
+            border-color: rgba(240, 147, 251, 0.5);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-body {
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-title {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .quiz-card .card-body {
+            color: var(--dark-color);
+        }
+        
+        .quiz-card .card-title {
+            color: var(--primary-color);
+        }
+        
+        .badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: none;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 12px 24px;
+            text-decoration: none;
+            border: 2px solid;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            border: 2px solid transparent;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(118, 75, 162, 0.4);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .text-muted {
+            color: #64748b !important;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .quiz-card .text-muted, .card .text-muted {
+            color: #6b7280 !important;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 6rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .empty-state i {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            display: block;
+        }
+        
+        .empty-state h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+            margin-top: 6rem;
+            box-shadow: 0 -10px 40px rgba(102, 126, 234, 0.1);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+                padding: 1.5rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Shapes -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-mortarboard-fill me-2"></i>Quizeria
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house me-1"></i>Home
+                </a>
+                <a class="nav-link active" href="/user">
+                    <i class="bi bi-person-circle me-1"></i>User Panel
+                </a>
+                <form method="post" action="/logout" style="display: inline;">
+                    <button type="submit" class="btn nav-link border-0">
+                        <i class="bi bi-box-arrow-right me-1"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Title -->
+        <h1 class="dashboard-title">
+            <i class="bi bi-person-circle me-3"></i>User Dashboard
+        </h1>
+        <br>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" style="color:#f8fafc">
+                            <i class="bi bi-journal-text me-2" ></i>Available Quizzes
+                            <span class="badge ms-2" style="background: rgba(255, 255, 255, 0.2); color: white;" th:text="${quizzes != null ? quizzes.size() : 0}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${quizzes != null and !quizzes.empty}">
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4" th:each="quiz : ${quizzes}">
+                                    <div class="card mb-4 quiz-card h-100">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <span class="badge mb-2" style="background: rgba(214, 67, 230, 0.807); color: white;" th:text="'ID: ' + ${quiz.id}">ID: 1</span>
+                                                    <h5 class="card-title" th:text="${quiz.title}">Quiz Title</h5>
+                                                </div>
+                                                <i class="bi bi-journal-check" style="font-size: 2rem; opacity: 0.5; color: rgba(255, 255, 255, 0.8);"></i>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-question-circle me-1"></i>
+                                                    <span th:text="${quiz.questions != null ? quiz.questions.size() : 0}">0</span> Questions
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    Estimated time: <span th:text="${quiz.questions != null ? (quiz.questions.size() * 2) : 0}">0</span> minutes
+                                                </small>
+                                            </div>
+                                            
+                                            <div class="mt-auto">
+                                                <div class="d-grid">
+                                                    <a th:href="@{'/user/quiz/' + ${quiz.id}}" 
+                                                       class="btn btn-primary">
+                                                        <i class="bi bi-play-circle me-2"></i>Start Quiz
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${quizzes == null or quizzes.empty}" class="text-center py-5">
+                            <i class="bi bi-journal-x display-1 text-muted"></i>
+                            <h4 class="text-muted mt-3">No quizzes available</h4>
+                            <p class="text-muted">Check back later for new quizzes!</p>
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Study Notes Section -->
+            <div class="col-12 mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" style="color:#f8fafc">
+                            <i class="bi bi-journal-bookmark me-2"></i>Study Notes
+                            <span class="badge ms-2" style="background: rgba(255, 255, 255, 0.2); color: white;" th:text="${notes != null ? notes.size() : 0}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${notes != null and !notes.empty}">
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4" th:each="note : ${notes}">
+                                    <div class="card mb-4 quiz-card h-100">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <span class="badge mb-2" style="background: rgba(16, 185, 129, 0.8); color: white;" th:text="${note.topic}">Topic</span>
+                                                    <h5 class="card-title" th:text="${note.title}">Note Title</h5>
+                                                </div>
+                                                <i class="bi bi-journal-text" style="font-size: 2rem; opacity: 0.5; color: rgba(16, 185, 129, 0.6);"></i>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <p class="text-muted" th:text="${#strings.length(note.description) > 100 ? #strings.substring(note.description, 0, 100) + '...' : note.description}">Note description...</p>
+                                                <div th:if="${note.videoUrl != null and !#strings.isEmpty(note.videoUrl)}">
+                                                    <small class="text-success">
+                                                        <i class="bi bi-play-circle me-1"></i>Video Available
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-auto">
+                                                <div class="d-grid">
+                                                    <a th:href="@{'/user/notes/' + ${note.id}}" 
+                                                       class="btn btn-primary">
+                                                        <i class="bi bi-book me-2"></i>View Note
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${notes == null or notes.empty}" class="text-center py-5">
+                            <i class="bi bi-journal-plus display-1 text-muted"></i>
+                            <h4 class="text-muted mt-3">No study notes available</h4>
+                            <p class="text-muted">Check back later for study materials!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Quizeria by Naman Jain</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Feedback - Quizeria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            top: 15%;
+            right: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 50%;
+            bottom: 20%;
+            left: 15%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(180deg); }
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 2rem;
+            color: white !important;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 10px 20px !important;
+            margin: 0 6px;
+            backdrop-filter: blur(10px);
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feedback-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            margin: 3rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .feedback-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin: 0;
+            border-radius: 24px 24px 0 0;
+        }
+        
+        .feedback-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feedback-header p {
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .feedback-form {
+            padding: 2rem;
+        }
+        
+        .form-floating {
+            margin-bottom: 2rem;
+        }
+        
+        .form-control {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem 1rem 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-control:focus {
+            background: rgba(255, 255, 255, 1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .form-floating > label {
+            color: var(--dark-color);
+            font-weight: 600;
+            padding: 1rem 1rem 0.75rem;
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: var(--primary-color);
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+        
+        .rating-section {
+            background: rgba(248, 250, 252, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .rating-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .star {
+            font-size: 2.5rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+            transform: scale(1.2);
+            filter: drop-shadow(0 4px 8px rgba(251, 191, 36, 0.3));
+        }
+        
+        .star.active {
+            animation: starPulse 0.3s ease-out;
+        }
+        
+        @keyframes starPulse {
+            0% { transform: scale(1.2); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1.2); }
+        }
+        
+        .rating-label {
+            text-align: center;
+            font-weight: 600;
+            color: var(--secondary-color);
+            min-height: 1.5rem;
+        }
+        
+        .form-actions {
+            padding: 2rem;
+            border-top: 2px solid rgba(102, 126, 234, 0.1);
+            background: rgba(248, 250, 252, 0.5);
+            border-radius: 0 0 24px 24px;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(118, 75, 162, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            border: 2px solid var(--dark-color);
+            color: var(--dark-color);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: var(--dark-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(31, 41, 55, 0.3);
+        }
+        
+        .container {
+            max-width: 800px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .emoji-feedback {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .emoji-option {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid transparent;
+        }
+        
+        .emoji-option:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+        }
+        
+        .emoji-option.selected {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        
+        .emoji-option .emoji {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .emoji-option .label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        @media (max-width: 768px) {
+            .feedback-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .emoji-feedback {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .emoji-option .emoji {
+                font-size: 2rem;
+            }
+            
+            .form-actions .btn {
+                display: block;
+                margin: 0.5rem 0;
+                width: 100%;
+            }
+            
+            .star {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating shapes for visual enhancement -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/user">
+                <i class="bi bi-award"></i>
+                Quizeria
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user">
+                            <i class="bi bi-house-door me-2"></i>Dashboard
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="feedback-container">
+            <div class="feedback-header">
+                <h1><i class="bi bi-chat-heart me-2"></i>Share Your Feedback</h1>
+                <p>Help us improve your quiz experience</p>
+                <small th:if="${quiz}" th:text="'Quiz: ' + ${quiz.title}" class="d-block mt-2 opacity-75">Quiz: Sample Quiz</small>
+            </div>
+
+            <form th:action="@{'/user/quiz/' + ${quiz != null ? quiz.id : 1} + '/feedback'}" method="post" class="feedback-form">
+                
+                <!-- Overall Experience Rating -->
+                <div class="rating-section">
+                    <div class="rating-title">
+                        <i class="bi bi-star me-2"></i>How was your overall experience?
+                    </div>
+                    <div class="rating-stars">
+                        <i class="bi bi-star-fill star" data-rating="1"></i>
+                        <i class="bi bi-star-fill star" data-rating="2"></i>
+                        <i class="bi bi-star-fill star" data-rating="3"></i>
+                        <i class="bi bi-star-fill star" data-rating="4"></i>
+                        <i class="bi bi-star-fill star" data-rating="5"></i>
+                    </div>
+                    <div class="rating-label" id="ratingLabel">Click stars to rate</div>
+                    <input type="hidden" name="rating" id="ratingValue" value="0" required>
+                </div>
+
+                <!-- Quick Emoji Feedback -->
+                <div class="emoji-feedback">
+                    <div class="emoji-option" data-feedback="easy">
+                        <span class="emoji">😊</span>
+                        <div class="label">Too Easy</div>
+                    </div>
+                    <div class="emoji-option" data-feedback="perfect">
+                        <span class="emoji">👍</span>
+                        <div class="label">Just Right</div>
+                    </div>
+                    <div class="emoji-option" data-feedback="hard">
+                        <span class="emoji">😅</span>
+                        <div class="label">Too Hard</div>
+                    </div>
+                    <div class="emoji-option" data-feedback="confusing">
+                        <span class="emoji">🤔</span>
+                        <div class="label">Confusing</div>
+                    </div>
+                </div>
+                <input type="hidden" name="quickFeedback" id="quickFeedback" value="">
+
+                <!-- Detailed Feedback -->
+                <div class="form-floating">
+                    <textarea class="form-control" 
+                              name="feedbackText" 
+                              id="feedbackText" 
+                              style="height: 150px;"
+                              placeholder="Tell us more about your experience..."
+                              required></textarea>
+                    <label for="feedbackText">
+                        <i class="bi bi-chat-dots me-2"></i>Your detailed feedback
+                    </label>
+                </div>
+
+                <!-- Suggestions for Improvement -->
+                <div class="form-floating">
+                    <textarea class="form-control" 
+                              name="suggestions" 
+                              id="suggestions" 
+                              style="height: 120px;"
+                              placeholder="Any suggestions for improvement?"></textarea>
+                    <label for="suggestions">
+                        <i class="bi bi-lightbulb me-2"></i>Suggestions (Optional)
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-2"></i>Submit Feedback
+                    </button>
+                    
+                    <a th:href="@{'/user'}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Star rating functionality
+        const stars = document.querySelectorAll('.star');
+        const ratingValue = document.getElementById('ratingValue');
+        const ratingLabel = document.getElementById('ratingLabel');
+        
+        const ratingLabels = {
+            1: 'Poor - Needs major improvements',
+            2: 'Fair - Could be better',
+            3: 'Good - Satisfied with the experience',
+            4: 'Very Good - Really enjoyed it',
+            5: 'Excellent - Outstanding experience!'
+        };
+        
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = parseInt(star.getAttribute('data-rating'));
+                ratingValue.value = rating;
+                ratingLabel.textContent = ratingLabels[rating];
+                
+                // Update star display
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseover', () => {
+                const rating = parseInt(star.getAttribute('data-rating'));
+                ratingLabel.textContent = ratingLabels[rating];
+                
+                // Preview rating on hover
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.style.color = '#fbbf24';
+                        s.style.transform = 'scale(1.1)';
+                    } else {
+                        s.style.color = '#e5e7eb';
+                        s.style.transform = 'scale(1)';
+                    }
+                });
+            });
+        });
+        
+        // Reset hover effect when mouse leaves rating area
+        document.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+            const currentRating = parseInt(ratingValue.value);
+            if (currentRating > 0) {
+                ratingLabel.textContent = ratingLabels[currentRating];
+            } else {
+                ratingLabel.textContent = 'Click stars to rate';
+            }
+            
+            stars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.style.color = '#fbbf24';
+                    s.style.transform = 'scale(1.2)';
+                } else {
+                    s.style.color = '#e5e7eb';
+                    s.style.transform = 'scale(1)';
+                }
+            });
+        });
+        
+        // Emoji feedback functionality
+        const emojiOptions = document.querySelectorAll('.emoji-option');
+        const quickFeedback = document.getElementById('quickFeedback');
+        
+        emojiOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all options
+                emojiOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+                
+                // Set the value
+                quickFeedback.value = option.getAttribute('data-feedback');
+            });
+        });
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', (e) => {
+            const rating = parseInt(ratingValue.value);
+            const feedbackText = document.getElementById('feedbackText').value.trim();
+            
+            if (rating === 0) {
+                e.preventDefault();
+                alert('Please provide a star rating before submitting.');
+                document.querySelector('.rating-stars').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            if (feedbackText.length < 10) {
+                e.preventDefault();
+                alert('Please provide at least 10 characters of feedback.');
+                document.getElementById('feedbackText').focus();
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+        });
+        
+        // Auto-resize textareas
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
+    </script>
+</body>
+</html>

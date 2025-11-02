@@ -9,8 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -20,20 +18,42 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // For debugging only; remove this line for production!
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/", "/student", "/student/**", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasRole("USER")
                 .anyRequest().authenticated()
             )
-            .formLogin(withDefaults()) // Use default login page
-            .logout(logout -> logout.permitAll());
+            .formLogin(form -> form
+                .loginPage("/login")
+                .successHandler((request, response, authentication) -> {
+                    String redirectURL = request.getContextPath();
+                    if (authentication.getAuthorities().stream()
+                            .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+                        redirectURL += "/admin";
+                    } else if (authentication.getAuthorities().stream()
+                            .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_USER"))) {
+                        redirectURL += "/user";
+                    } else {
+                        redirectURL += "/";
+                    }
+                    response.sendRedirect(redirectURL);
+                })
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
+            );
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
         return new InMemoryUserDetailsManager(
-            User.withUsername("admin").password("{noop}admin123").roles("ADMIN").build(),
-            User.withUsername("student").password("{noop}student123").roles("USER").build()
+            User.withUsername("admin").password("{noop}admin").roles("ADMIN").build(),
+            User.withUsername("user").password("{noop}user").roles("USER").build()
         );
     }
 }

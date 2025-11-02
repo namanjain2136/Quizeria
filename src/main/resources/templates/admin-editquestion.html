@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Question - Quizeria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape-1 {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 50%;
+            top: 70%;
+            right: 15%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        .shape-3 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, rgba(118, 75, 162, 0.1), rgba(240, 147, 251, 0.1));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            bottom: 15%;
+            left: 15%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background: var(--primary-color);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            padding-top: 2rem;
+        }
+        
+        .question-wizard {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .wizard-header {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .wizard-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 10px solid #d97706;
+        }
+        
+        .question-preview {
+            background: rgba(102, 126, 234, 0.05);
+            border: 2px dashed rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .option-preview {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .option-preview:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .option-preview.correct {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .option-preview.correct::after {
+            content: '✓ Correct Answer';
+            float: right;
+            color: var(--success-color);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .form-floating label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .option-input {
+            position: relative;
+        }
+        
+        .option-label {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            z-index: 10;
+        }
+        
+        .option-input input {
+            padding-left: 4rem;
+        }
+        
+        .btn-update-question {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-update-question:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(245, 158, 11, 0.4);
+            color: white;
+        }
+        
+        .correct-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .correct-option {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .correct-option:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .correct-option.selected {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .correct-option input[type="radio"] {
+            display: none;
+        }
+        
+        .quiz-info {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .character-counter {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: right;
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-outline-warning {
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+        
+        .btn-outline-warning:hover {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success-color);
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger-color);
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+            margin-top: 6rem;
+            box-shadow: 0 -10px 40px rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Shapes -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/home">
+                <i class="bi bi-mortarboard-fill"></i>
+                Quizeria
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home">
+                            <i class="bi bi-house me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">
+                            <i class="bi bi-speedometer2 me-1"></i>Admin Panel
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="/logout" style="display: inline;">
+                            <button type="submit" class="btn nav-link border-0">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Quiz Info -->
+                <div class="quiz-info">
+                    <h5 class="mb-2" style="color: var(--warning-color);">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Editing Question for Quiz: <span th:text="${quiz.title}">Quiz Title</span>
+                    </h5>
+                    <p class="text-muted mb-0" th:text="${quiz.description}">Quiz description</p>
+                </div>
+                
+                <div class="question-wizard">
+                    <div class="wizard-header">
+                        <h1 class="mb-0">
+                            <i class="bi bi-pencil-square me-3"></i>Edit Question
+                        </h1>
+                        <p class="mb-0 mt-2 opacity-90">Update your question details and options</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Error Message -->
+                        <div th:if="${error}" class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div th:text="${error}">An error occurred while updating the question.</div>
+                        </div>
+                        
+                        <form th:action="@{'/admin/quiz/' + ${quiz.id} + '/questions/' + ${question.id} + '/edit'}" 
+                              th:object="${question}" 
+                              method="post" 
+                              id="questionForm">
+                            
+                            <!-- Question Text -->
+                            <div class="form-floating mb-4">
+                                <textarea class="form-control form-control-lg" 
+                                          th:field="*{text}" 
+                                          id="questionText" 
+                                          placeholder="Question Text"
+                                          style="height: 120px;"
+                                          maxlength="500"
+                                          required
+                                          onInput="updatePreview();">
+                                </textarea>
+                                <label for="questionText">
+                                    <i class="bi bi-question-circle me-2"></i>Question Text
+                                </label>
+                                <div class="character-counter">
+                                    <span id="questionCount">0</span>/500 characters
+                                </div>
+                            </div>
+                            
+                            <!-- Answer Options -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating option-input">
+                                        <div class="option-label" style="background: #3b82f6;">A</div>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               th:field="*{optionA}" 
+                                               id="optionA" 
+                                               placeholder="Option A"
+                                               maxlength="200"
+                                               required
+                                               onInput="updatePreview();">
+                                        <label for="optionA">Option A</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating option-input">
+                                        <div class="option-label" style="background: #f59e0b;">B</div>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               th:field="*{optionB}" 
+                                               id="optionB" 
+                                               placeholder="Option B"
+                                               maxlength="200"
+                                               required
+                                               onInput="updatePreview();">
+                                        <label for="optionB">Option B</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating option-input">
+                                        <div class="option-label" style="background: #06b6d4;">C</div>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               th:field="*{optionC}" 
+                                               id="optionC" 
+                                               placeholder="Option C"
+                                               maxlength="200"
+                                               required
+                                               onInput="updatePreview();">
+                                        <label for="optionC">Option C</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating option-input">
+                                        <div class="option-label" style="background: #10b981;">D</div>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               th:field="*{optionD}" 
+                                               id="optionD" 
+                                               placeholder="Option D"
+                                               maxlength="200"
+                                               required
+                                               onInput="updatePreview();">
+                                        <label for="optionD">Option D</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Correct Answer Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Select Correct Answer
+                                </label>
+                                <div class="correct-selector">
+                                    <div class="correct-option" onclick="selectCorrectOption('A')">
+                                        <input type="radio" th:field="*{correctOption}" value="A" id="correctA" onchange="updatePreview();">
+                                        <div class="fw-bold text-primary">A</div>
+                                        <small>Option A</small>
+                                    </div>
+                                    <div class="correct-option" onclick="selectCorrectOption('B')">
+                                        <input type="radio" th:field="*{correctOption}" value="B" id="correctB" onchange="updatePreview();">
+                                        <div class="fw-bold" style="color: #f59e0b;">B</div>
+                                        <small>Option B</small>
+                                    </div>
+                                    <div class="correct-option" onclick="selectCorrectOption('C')">
+                                        <input type="radio" th:field="*{correctOption}" value="C" id="correctC" onchange="updatePreview();">
+                                        <div class="fw-bold" style="color: #06b6d4;">C</div>
+                                        <small>Option C</small>
+                                    </div>
+                                    <div class="correct-option" onclick="selectCorrectOption('D')">
+                                        <input type="radio" th:field="*{correctOption}" value="D" id="correctD" onchange="updatePreview();">
+                                        <div class="fw-bold" style="color: #10b981;">D</div>
+                                        <small>Option D</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Question Preview -->
+                            <div class="question-preview" id="questionPreview">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-eye me-2"></i>Question Preview
+                                </h6>
+                                <div class="fw-bold mb-3" id="previewQuestion" th:text="${question.text}">Your question will appear here...</div>
+                                <div id="previewOptions">
+                                    <!-- Options will be generated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="d-grid gap-3 mt-5">
+                                <button class="btn btn-update-question btn-lg" type="submit">
+                                    <i class="bi bi-check-circle me-2"></i>Update Question
+                                </button>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions'}" 
+                                           class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-arrow-left me-2"></i>Back to Questions
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="/admin" class="btn btn-outline-secondary w-100">
+                                            <i class="bi bi-speedometer2 me-2"></i>Admin Panel
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="reset" class="btn btn-outline-warning w-100" onclick="resetForm();">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Reset Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Quizeria by Naman Jain</p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentCorrectOption = '';
+        
+        // Update character count
+        function updateCharCount() {
+            const questionField = document.getElementById('questionText');
+            const counter = document.getElementById('questionCount');
+            const currentLength = questionField.value.length;
+            counter.textContent = currentLength;
+            
+            if (currentLength > 400) {
+                counter.style.color = '#ef4444';
+            } else if (currentLength > 300) {
+                counter.style.color = '#f59e0b';
+            } else {
+                counter.style.color = '#64748b';
+            }
+        }
+        
+        // Select correct option
+        function selectCorrectOption(option) {
+            // Remove selected class from all options
+            document.querySelectorAll('.correct-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            const selectedOption = event.currentTarget;
+            selectedOption.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById('correct' + option).checked = true;
+            currentCorrectOption = option;
+            
+            updatePreview();
+        }
+        
+        // Update preview
+        function updatePreview() {
+            const questionText = document.getElementById('questionText').value;
+            const optionA = document.getElementById('optionA').value;
+            const optionB = document.getElementById('optionB').value;
+            const optionC = document.getElementById('optionC').value;
+            const optionD = document.getElementById('optionD').value;
+            const correctOption = document.querySelector('input[name="correctOption"]:checked')?.value || '';
+            
+            const previewQuestion = document.getElementById('previewQuestion');
+            const previewOptions = document.getElementById('previewOptions');
+            
+            previewQuestion.textContent = questionText || 'Your question will appear here...';
+            
+            previewOptions.innerHTML = `
+                <div class="option-preview ${correctOption === 'A' ? 'correct' : ''}" style="border-left: 4px solid #3b82f6;">
+                    <strong>A.</strong> ${optionA || 'Option A...'}
+                </div>
+                <div class="option-preview ${correctOption === 'B' ? 'correct' : ''}" style="border-left: 4px solid #f59e0b;">
+                    <strong>B.</strong> ${optionB || 'Option B...'}
+                </div>
+                <div class="option-preview ${correctOption === 'C' ? 'correct' : ''}" style="border-left: 4px solid #06b6d4;">
+                    <strong>C.</strong> ${optionC || 'Option C...'}
+                </div>
+                <div class="option-preview ${correctOption === 'D' ? 'correct' : ''}" style="border-left: 4px solid #10b981;">
+                    <strong>D.</strong> ${optionD || 'Option D...'}
+                </div>
+            `;
+            
+            updateCharCount();
+        }
+        
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all changes? This will restore the original values.')) {
+                location.reload();
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+            updatePreview();
+            
+            // Set the selected correct option based on current value
+            const currentCorrect = document.querySelector('input[name="correctOption"]:checked');
+            if (currentCorrect) {
+                const option = currentCorrect.value;
+                const selectedOption = document.querySelector(`.correct-option input[value="${option}"]`).closest('.correct-option');
+                selectedOption.classList.add('selected');
+                currentCorrectOption = option;
+            }
+            
+            // Form validation
+            const form = document.getElementById('questionForm');
+            form.addEventListener('submit', function(e) {
+                const questionText = document.getElementById('questionText').value.trim();
+                const correctOption = document.querySelector('input[name="correctOption"]:checked');
+                
+                if (!questionText) {
+                    e.preventDefault();
+                    alert('Please enter a question.');
+                    document.getElementById('questionText').focus();
+                    return;
+                }
+                
+                if (!correctOption) {
+                    e.preventDefault();
+                    alert('Please select the correct answer.');
+                    return;
+                }
+                
+                // Check if all options are filled
+                const options = ['optionA', 'optionB', 'optionC', 'optionD'];
+                for (let option of options) {
+                    if (!document.getElementById(option).value.trim()) {
+                        e.preventDefault();
+                        alert('Please fill in all answer options.');
+                        document.getElementById(option).focus();
+                        return;
+                    }
+                }
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Updating Question...';
+                submitBtn.disabled = true;
+                
+                // Re-enable after 5 seconds
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 5000);
+            });
+        });
+    </script>
+    
+</body>
+</html>

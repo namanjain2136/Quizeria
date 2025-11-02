@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Questions - Quizeria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape-1 {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 50%;
+            top: 70%;
+            right: 15%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        .shape-3 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, rgba(118, 75, 162, 0.1), rgba(240, 147, 251, 0.1));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            bottom: 15%;
+            left: 15%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .nav-link {
+            color: var(--dark-color) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background: var(--primary-color);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            padding-top: 2rem;
+        }
+        
+        .management-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .card-header-custom::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 10px solid var(--secondary-color);
+        }
+        
+        .quiz-info {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .question-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        .question-header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .question-number {
+            background: var(--primary-color);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+        
+        .question-text {
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+        
+        .option-item {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .option-item.correct {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .option-label {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .option-a .option-label { background: #3b82f6; }
+        .option-b .option-label { background: #f59e0b; }
+        .option-c .option-label { background: #06b6d4; }
+        .option-d .option-label { background: #10b981; }
+        
+        .correct-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .action-buttons {
+            padding: 1rem 1.5rem;
+            background: rgba(248, 250, 252, 0.8);
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-edit {
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-edit:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            color: white;
+        }
+        
+        .btn-add-question {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-add-question:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success-color);
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger-color);
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .footer a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer a:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Shapes -->
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/home">
+                <i class="bi bi-mortarboard-fill"></i>
+                Quizeria
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home">
+                            <i class="bi bi-house me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">
+                            <i class="bi bi-speedometer2 me-1"></i>Admin Panel
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="/logout" style="display: inline;">
+                            <button type="submit" class="btn nav-link border-0">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- Quiz Info -->
+                <div class="quiz-info">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="text-primary mb-2">
+                                <i class="bi bi-journal-text me-2"></i>
+                                Quiz: <span th:text="${quiz.title}">Quiz Title</span>
+                            </h4>
+                            <p class="text-muted mb-0" th:text="${quiz.description}">Quiz description</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="badge bg-primary fs-6 p-2">
+                                <i class="bi bi-list-ol me-1"></i>
+                                <span th:text="${questions.size()}">0</span> Questions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="management-card">
+                    <div class="card-header-custom">
+                        <h1 class="mb-0">
+                            <i class="bi bi-gear me-3"></i>Manage Questions
+                        </h1>
+                        <p class="mb-0 mt-2 opacity-90">Edit, delete, or add new questions to your quiz</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Success Message -->
+                        <div th:if="${success}" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div th:text="${success}">Operation completed successfully!</div>
+                        </div>
+                        
+                        <!-- Error Message -->
+                        <div th:if="${error}" class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div th:text="${error}">An error occurred.</div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">
+                                <i class="bi bi-question-circle me-2"></i>Questions List
+                            </h5>
+                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/add'}" class="btn btn-add-question">
+                                <i class="bi bi-plus-circle me-2"></i>Add New Question
+                            </a>
+                        </div>
+                        
+                        <!-- Questions List -->
+                        <div th:if="${questions != null and !questions.empty}">
+                            <div th:each="question, iterStat : ${questions}" class="question-card">
+                                <div class="question-header">
+                                    <div class="d-flex align-items-start">
+                                        <div class="question-number" th:text="${iterStat.count}">1</div>
+                                        <div class="question-text" th:text="${question.text}">What is the capital of France?</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="options-grid">
+                                    <div class="option-item option-a" th:classappend="${question.correctOption == 'A'} ? 'correct' : ''">
+                                        <div class="option-label">A</div>
+                                        <span th:text="${question.optionA}">Paris</span>
+                                        <span th:if="${question.correctOption == 'A'}" class="correct-badge">
+                                            <i class="bi bi-check-lg me-1"></i>Correct
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="option-item option-b" th:classappend="${question.correctOption == 'B'} ? 'correct' : ''">
+                                        <div class="option-label">B</div>
+                                        <span th:text="${question.optionB}">London</span>
+                                        <span th:if="${question.correctOption == 'B'}" class="correct-badge">
+                                            <i class="bi bi-check-lg me-1"></i>Correct
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="option-item option-c" th:classappend="${question.correctOption == 'C'} ? 'correct' : ''">
+                                        <div class="option-label">C</div>
+                                        <span th:text="${question.optionC}">Berlin</span>
+                                        <span th:if="${question.correctOption == 'C'}" class="correct-badge">
+                                            <i class="bi bi-check-lg me-1"></i>Correct
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="option-item option-d" th:classappend="${question.correctOption == 'D'} ? 'correct' : ''">
+                                        <div class="option-label">D</div>
+                                        <span th:text="${question.optionD}">Madrid</span>
+                                        <span th:if="${question.correctOption == 'D'}" class="correct-badge">
+                                            <i class="bi bi-check-lg me-1"></i>Correct
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="action-buttons">
+                                    <div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-check-circle-fill me-1" style="color: var(--success-color);"></i>
+                                            Correct Answer: <strong th:text="${question.correctOption}">A</strong>
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/' + ${question.id} + '/edit'}" 
+                                           class="btn btn-edit btn-sm me-2">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </a>
+                                        <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/' + ${question.id} + '/delete'}" 
+                                           class="btn btn-delete btn-sm"
+                                           onclick="return confirm('Are you sure you want to delete this question?')">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div th:if="${questions == null or questions.empty}" class="empty-state">
+                            <i class="bi bi-question-circle-fill"></i>
+                            <h4>No Questions Found</h4>
+                            <p>This quiz doesn't have any questions yet. Add some questions to get started!</p>
+                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/add'}" class="btn btn-add-question">
+                                <i class="bi bi-plus-circle me-2"></i>Add First Question
+                            </a>
+                        </div>
+                        
+                        <!-- Navigation Buttons -->
+                        <div class="row mt-4" th:if="${questions != null and !questions.empty}">
+                            <div class="col-md-4">
+                                <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/add'}" 
+                                   class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-plus-circle me-2"></i>Add More Questions
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/admin" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-speedometer2 me-2"></i>Admin Panel
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/edit'}" 
+                                   class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-pencil me-2"></i>Edit Quiz Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Smooth scroll for navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth animations for question cards
+            const questionCards = document.querySelectorAll('.question-card');
+            questionCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Confirmation for delete actions
+            const deleteButtons = document.querySelectorAll('.btn-delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-mortarboard-fill me-2"></i>Quizeria</h5>
+                    <p class="mb-0">Empowering education through interactive learning.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-3">
+                        <a href="/home"><i class="bi bi-house me-1"></i>Home</a>
+                        <a href="/admin"><i class="bi bi-speedometer2 me-1"></i>Admin</a>
+                        <a href="/logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+                    </div>
+                    <small class="text-light opacity-75">© 2025 Quizeria. All rights reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

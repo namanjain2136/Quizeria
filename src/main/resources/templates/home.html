@@ -1,28 +1,362 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <title>Home - Quizeria</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Quizeria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; text-align: center; margin-top: 80px; }
-        .btn {
-            margin: 20px;
-            padding: 12px 28px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            border: none;
-            background: #2d6cdf;
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s;
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
         }
-        .btn:hover { background: #1b4fa2; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="2" fill="white" opacity="0.3"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="800" cy="300" r="3" fill="white" opacity="0.2"><animate attributeName="r" values="3;6;3" dur="4s" repeatCount="indefinite"/></circle><circle cx="400" cy="600" r="2" fill="white" opacity="0.4"><animate attributeName="r" values="2;5;2" dur="2s" repeatCount="indefinite"/></circle><circle cx="700" cy="800" r="4" fill="white" opacity="0.1"><animate attributeName="r" values="4;8;4" dur="5s" repeatCount="indefinite"/></circle></svg>') no-repeat center center;
+            background-size: cover;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-login {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-login:hover {
+            background: white;
+            color: var(--primary-color);
+            border-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 4rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            animation: float 3s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-body {
+            padding: 2rem;
+            color: white;
+            text-align: center;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-text {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .btn-card {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-card:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* About Us Section */
+        .about-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
+
+        .about-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .about-intro {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.7;
+        }
+
+        .developer-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .developer-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .developer-title {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .developer-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .about-section {
+                padding: 2rem;
+                margin: 2rem 0;
+            }
+            
+            .about-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .about-section {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1 th:text="${title}">Welcome to Quizeria!</h1>
-    <div>
-        <a href="/admin"><button class="btn">Admin Panel</button></a>
-        <a href="/student"><button class="btn">Student Panel</button></a>
+    <div class="content-wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Quizeria
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <a href="/login" class="btn-login">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-icon">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <h1 class="hero-title">Welcome to Quizeria</h1>
+                <p class="hero-subtitle">Your Ultimate Destination for Interactive Learning and Smart Assessment</p>
+                
+                <div class="row justify-content-center mt-5">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <i class="bi bi-person-circle card-icon"></i>
+                                <h4 class="card-title">Student Portal</h4>
+                                <p class="card-text">Take engaging quizzes, test your knowledge, and track your learning progress with detailed feedback.</p>
+                                <a href="/login" class="btn-card">
+                                    <i class="bi bi-person-fill me-2"></i>Login as Student
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <i class="bi bi-gear-fill card-icon"></i>
+                                <h4 class="card-title">Admin Panel</h4>
+                                <p class="card-text">Create comprehensive quizzes, manage questions, and analyze student performance and feedback.</p>
+                                <a href="/login" class="btn-card">
+                                    <i class="bi bi-shield-fill-check me-2"></i>Login as Admin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Us Section -->
+        <section class="container">
+            <div class="about-section">
+                <h2 class="about-title">About Quizeria</h2>
+                <p class="about-intro">
+                    Quizeria is a modern, interactive quiz platform designed to make learning engaging and assessment effective. 
+                    Built with cutting-edge technology, our platform provides a seamless experience for both educators and students.
+                </p>
+                
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="developer-card">
+                            <h3 class="developer-name">Naman Jain</h3>
+                            <p class="developer-title">Software Developer & Project Manager</p>
+                            <p class="developer-description">
+                                Passionate about creating innovative educational technology solutions that transform the way we learn. 
+                                With expertise in full-stack development and project management, I'm dedicated to building platforms 
+                                that make education more accessible, interactive, and effective for everyone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center py-4 mt-5">
+            <div class="container">
+                <p style="color: white; opacity: 0.8; margin: 0;">&copy; 2025 Quizeria by Naman Jain</p>
+            </div>
+        </footer>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

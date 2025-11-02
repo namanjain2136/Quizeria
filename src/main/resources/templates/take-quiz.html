@@ -1,43 +1,565 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Take Quiz - Quizeria</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Taking Quiz: ' + ${quiz.title} + ' - Quizeria'">Take Quiz - Quizeria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 4px 16px rgba(44,108,223,0.08);}
-        h1 { color: #2d6cdf; }
-        .btn { margin: 20px 0; padding: 10px 24px; font-size: 1em; border-radius: 8px; border: none; background: #2d6cdf; color: #fff; cursor: pointer; }
-        .btn:hover { background: #1b4fa2; }
-        .question-block { margin-bottom: 32px; }
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating shapes */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            top: 15%;
+            right: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 50%;
+            bottom: 20%;
+            left: 15%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(180deg); }
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 2rem;
+            color: white !important;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 10px 20px !important;
+            margin: 0 6px;
+            backdrop-filter: blur(10px);
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            margin: 3rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .quiz-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin: 0;
+            border-radius: 24px 24px 0 0;
+        }
+        
+        .quiz-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quiz-header p {
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .question-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            margin: 2rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        
+        .question-number {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .question-text {
+            color: var(--dark-color);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .option-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-check {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .form-check-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .form-check-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: var(--dark-color);
+            width: 100%;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-check-label:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-check-input:checked + .form-check-label {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Custom radio button design */
+        .form-check-label::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            margin-right: 1rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-check-input:checked + .form-check-label::before {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.9);
+        }
+        
+        .option-letter {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .form-check-input:checked + .form-check-label .option-letter {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .quiz-actions {
+            padding: 2rem;
+            border-top: 2px solid rgba(102, 126, 234, 0.1);
+            background: rgba(248, 250, 252, 0.5);
+            border-radius: 0 0 24px 24px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(118, 75, 162, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-danger {
+            border: 2px solid var(--danger-color);
+            color: var(--danger-color);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-outline-danger:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .quiz-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .question-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .form-check-label {
+                padding: 0.8rem 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 th:text="'Quiz: ' + ${quiz.title}">Quiz</h1>
-        <form th:action="@{'/student/quiz/' + ${quiz.id} + '/submit'}" method="post">
-            <div th:each="q, idx : ${questions}" class="question-block">
-                <p><strong th:text="${idx.index + 1} + '. ' + ${q.text}"></strong></p>
-                <label>
-                    <input type="radio" th:name="${'question_' + q.id}" value="A" required>
-                    <span th:text="${q.optionA}"></span>
-                </label><br>
-                <label>
-                    <input type="radio" th:name="${'question_' + q.id}" value="B">
-                    <span th:text="${q.optionB}"></span>
-                </label><br>
-                <label>
-                    <input type="radio" th:name="${'question_' + q.id}" value="C">
-                    <span th:text="${q.optionC}"></span>
-                </label><br>
-                <label>
-                    <input type="radio" th:name="${'question_' + q.id}" value="D">
-                    <span th:text="${q.optionD}"></span>
-                </label>
+    <div layout:fragment="content">
+        <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="card-title mb-1" th:text="${quiz.title}">Quiz Title</h4>
+                                <div th:if="${quiz.description}" class="quiz-description mb-2" th:text="${quiz.description}">Quiz description</div>
+                                <small th:text="${questions.size()} + ' Questions'">Questions</small>
+                            </div>
+                            <div class="quiz-progress">
+                                <span id="current-question">1</span>/<span th:text="${questions.size()}">0</span>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="progress mt-2" style="height: 4px;">
+                            <div class="progress-bar bg-warning" id="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{'/user/quiz/' + ${quiz.id} + '/submit'}" method="post" id="quiz-form">
+                            <div th:each="q, qStat : ${questions}" class="question-block" style="display: none;" th:data-question="${qStat.index}">
+                                <div class="question-header mb-4">
+                                    <span class="badge bg-primary me-2" th:text="'Question ' + ${qStat.index + 1}">Q1</span>
+                                    <h5 class="d-inline" th:text="${q.text}">Question text</h5>
+                                </div>
+                                
+                                <div class="options-container">
+                                    <div class="form-check mb-3" th:each="option, optStat : ${'A,B,C,D'.split(',')}">
+                                        <input class="form-check-input" type="radio" 
+                                               th:name="${'question_' + q.id}" 
+                                               th:value="${option}"
+                                               th:id="${'q' + q.id + 'opt' + option}"
+                                               required>
+                                        <label class="form-check-label" 
+                                               th:for="${'q' + q.id + 'opt' + option}">
+                                            <span class="option-letter" th:text="${option}">A</span>
+                                            <span th:text="${option == 'A' ? q.optionA : (option == 'B' ? q.optionB : (option == 'C' ? q.optionC : q.optionD))}">Option text</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Navigation buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary" id="prev-btn" disabled>
+                                    <i class="bi bi-arrow-left me-1"></i>Previous
+                                </button>
+                                
+                                <div class="btn-group">
+                                    <a href="/user" class="btn btn-outline-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </a>
+                                </div>
+                                
+                                <button type="button" class="btn btn-primary" id="next-btn">
+                                    Next<i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                                
+                                <button type="submit" class="btn btn-success" id="submit-btn" style="display: none;">
+                                    <i class="bi bi-check-circle me-1"></i>Submit Quiz
+                                </button>
+                            </div>
+                            
+                            <!-- Question overview -->
+                            <div class="mt-4 p-3 bg-light rounded">
+                                <h6 class="mb-3">Question Overview:</h6>
+                                <div id="question-indicators" class="d-flex flex-wrap gap-2">
+                                    <!-- Question indicators will be generated by JavaScript -->
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Click on question numbers to jump to specific questions
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <button class="btn" type="submit">Submit Quiz</button>
-        </form>
-        <a href="/student"><button class="btn">Back to Quizzes</button></a>
+        </div>
     </div>
+    
+    <th:block layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questions = document.querySelectorAll('.question-block');
+            const nextBtn = document.getElementById('next-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const currentQuestionSpan = document.getElementById('current-question');
+            const progressBar = document.getElementById('progress-bar');
+            const questionIndicators = document.getElementById('question-indicators');
+            
+            let currentQuestion = 0;
+            const totalQuestions = questions.length;
+            
+            // Initialize question indicators
+            function initQuestionIndicators() {
+                for (let i = 0; i < totalQuestions; i++) {
+                    const indicator = document.createElement('button');
+                    indicator.type = 'button';
+                    indicator.className = 'btn btn-outline-secondary btn-sm';
+                    indicator.textContent = i + 1;
+                    indicator.onclick = () => goToQuestion(i);
+                    questionIndicators.appendChild(indicator);
+                }
+            }
+            
+            // Update question display
+            function showQuestion(index) {
+                questions.forEach((q, i) => {
+                    q.style.display = i === index ? 'block' : 'none';
+                });
+                
+                currentQuestionSpan.textContent = index + 1;
+                progressBar.style.width = ((index + 1) / totalQuestions * 100) + '%';
+                
+                // Update navigation buttons
+                prevBtn.disabled = index === 0;
+                
+                if (index === totalQuestions - 1) {
+                    nextBtn.style.display = 'none';
+                    submitBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'inline-block';
+                    submitBtn.style.display = 'none';
+                }
+                
+                // Update question indicators
+                const indicators = questionIndicators.querySelectorAll('button');
+                indicators.forEach((indicator, i) => {
+                    indicator.classList.remove('btn-primary', 'btn-success');
+                    indicator.classList.add('btn-outline-secondary');
+                    
+                    if (i === index) {
+                        indicator.classList.remove('btn-outline-secondary');
+                        indicator.classList.add('btn-primary');
+                    } else if (isQuestionAnswered(i)) {
+                        indicator.classList.remove('btn-outline-secondary');
+                        indicator.classList.add('btn-success');
+                    }
+                });
+            }
+            
+            // Check if question is answered
+            function isQuestionAnswered(questionIndex) {
+                const question = questions[questionIndex];
+                const radioButtons = question.querySelectorAll('input[type="radio"]');
+                return Array.from(radioButtons).some(radio => radio.checked);
+            }
+            
+            // Go to specific question
+            function goToQuestion(index) {
+                currentQuestion = index;
+                showQuestion(currentQuestion);
+            }
+            
+            // Navigation event listeners
+            nextBtn.addEventListener('click', function() {
+                if (currentQuestion < totalQuestions - 1) {
+                    currentQuestion++;
+                    showQuestion(currentQuestion);
+                }
+            });
+            
+            prevBtn.addEventListener('click', function() {
+                if (currentQuestion > 0) {
+                    currentQuestion--;
+                    showQuestion(currentQuestion);
+                }
+            });
+            
+            // Auto-advance on answer selection (optional)
+            questions.forEach((question, index) => {
+                const radioButtons = question.querySelectorAll('input[type="radio"]');
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        showQuestion(currentQuestion); // Update indicators
+                    });
+                });
+            });
+            
+            // Form submission validation
+            document.getElementById('quiz-form').addEventListener('submit', function(e) {
+                let allAnswered = true;
+                for (let i = 0; i < totalQuestions; i++) {
+                    if (!isQuestionAnswered(i)) {
+                        allAnswered = false;
+                        break;
+                    }
+                }
+                
+                if (!allAnswered) {
+                    e.preventDefault();
+                    alert('Please answer all questions before submitting.');
+                    return false;
+                }
+                
+                return confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.');
+            });
+            
+            // Initialize
+            initQuestionIndicators();
+            showQuestion(0);
+        });
+    </script>
+    </th:block>
 </body>
 </html>

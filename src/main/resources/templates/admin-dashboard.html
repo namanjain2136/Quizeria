@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Quizeria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --light-gradient: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 50%, rgba(240, 147, 251, 0.1) 100%);
+            --card-shadow: 0 10px 40px rgba(102, 126, 234, 0.15);
+            --hover-shadow: 0 20px 60px rgba(118, 75, 162, 0.2);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 2rem;
+            color: white !important;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 12px;
+            margin-right: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 10px 20px !important;
+            margin: 0 6px;
+            backdrop-filter: blur(10px);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-title {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary-color);
+            font-weight: 900;
+            font-size: 3.5rem;
+            text-align: center;
+            margin: 3rem 0 2rem 0;
+            letter-spacing: -1px;
+            position: relative;
+            padding: 2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-title::after {
+            content: '';
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .section-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 4rem 0 3rem 0;
+            padding: 0 2rem;
+        }
+        
+        .section-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 16px 32px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            min-width: 160px;
+            justify-content: center;
+        }
+        
+        .section-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
+        }
+        
+        .section-btn:hover::before {
+            left: 100%;
+        }
+        
+        .section-btn:hover, .section-btn.active {
+            background: rgba(255, 255, 255, 0.98);
+            color: var(--secondary-color);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2);
+            border-color: rgba(240, 147, 251, 0.5);
+        }
+        
+        .section-btn i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 24px;
+        }
+        
+        .stats-card:hover::before {
+            opacity: 0.08;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.15);
+            border-color: rgba(240, 147, 251, 0.5);
+        }
+        
+        .stats-card .icon {
+            color: var(--primary-color);
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stats-card .count {
+            color: var(--secondary-color);
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stats-card .label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .content-card h4 {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .note-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(240, 147, 251, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(15px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .note-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.12);
+            border-color: rgba(240, 147, 251, 0.6);
+        }
+        
+        .note-card .note-title {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        .note-card .note-topic {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .note-card .note-description {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+        
+        .video-container {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            background: #000;
+        }
+        
+        .video-container iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .ratio-16x9 {
+            --bs-aspect-ratio: calc(9 / 16 * 100%);
+            position: relative;
+            width: 100%;
+        }
+        
+        .ratio::before {
+            display: block;
+            padding-top: var(--bs-aspect-ratio);
+            content: "";
+        }
+        
+        .ratio > * {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .video-iframe {
+            width: 100%;
+            height: 240px;
+            border-radius: 16px;
+            border: none;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 16px 32px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 50px rgba(118, 75, 162, 0.4);
+            color: white;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+            margin-top: 6rem;
+            box-shadow: 0 -10px 40px rgba(102, 126, 234, 0.1);
+        }
+        
+        .dashboard-section {
+            min-height: 70vh;
+            padding: 2rem 0;
+        }
+        
+        .dashboard-section.hidden {
+            display: none;
+        }
+        
+        .quick-actions {
+            text-align: center;
+            margin: 4rem 0;
+            padding: 3rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .quick-actions .btn-gradient {
+            margin: 0 15px 15px 0;
+            min-width: 200px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 6rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .empty-state i {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            display: block;
+        }
+        
+        .empty-state h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* Table Improvements */
+        .table {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 1.5rem 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tbody td {
+            border-color: rgba(240, 147, 251, 0.2);
+            padding: 1.2rem 1rem;
+            vertical-align: middle;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        
+        .table tbody tr:hover td {
+            background: rgba(240, 147, 251, 0.1);
+        }
+        
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-group .btn {
+            border-radius: 12px;
+            margin: 0 2px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-warning:hover {
+            background: #fbbf24;
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-danger:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: translateY(-2px);
+        }
+        
+        /* Container improvements */
+        .container-fluid {
+            padding: 0 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 1rem;
+            }
+            
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                min-width: 120px;
+            }
+            
+            .stats-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .content-card {
+                padding: 2rem;
+            }
+            .footer {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-mortarboard-fill me-2"></i>Quizeria
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house me-1"></i>Home
+                </a>
+                <a class="nav-link active" href="/admin">
+                    <i class="bi bi-gear me-1"></i>Admin
+                </a>
+                <a class="nav-link" href="/logout">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Dashboard Title -->
+        <h1 class="dashboard-title">
+            <i class="bi bi-speedometer2 me-3"></i>Admin Dashboard
+        </h1>
+        
+        <!-- Section Navigation -->
+        <div class="section-nav">
+            <button class="section-btn active" onclick="showSection('overview', this)">
+                <i class="bi bi-house me-2"></i>Overview
+            </button>
+            <button class="section-btn" onclick="showSection('quizzes', this)">
+                <i class="bi bi-journal-text me-2"></i>Quizzes
+            </button>
+            <button class="section-btn" onclick="showSection('notes', this)">
+                <i class="bi bi-book me-2"></i>Study Notes
+            </button>
+            <button class="section-btn" onclick="showSection('feedback', this)">
+                <i class="bi bi-chat-dots me-2"></i>Feedback
+            </button>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overview-section" class="dashboard-section">
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <div class="count" th:text="${totalQuizzes ?: 0}">0</div>
+                        <div class="label">Total Quizzes</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <div class="count" th:text="${totalQuestions ?: 0}">0</div>
+                        <div class="label">Total Questions</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="count" th:text="${totalNotes ?: 0}">0</div>
+                        <div class="label">Study Notes</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <div class="count" th:text="${totalFeedback ?: 0}">0</div>
+                        <div class="label">Feedback Items</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Quizzes Section -->
+        <div id="quizzes-section" class="dashboard-section hidden">
+            <div class="content-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-journal-text me-2"></i>Quiz Management</h4>
+                    <a href="/admin/quiz/add" class="btn-gradient">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Quiz
+                    </a>
+                </div>
+
+                <div th:if="${quizzes != null and !quizzes.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-hash me-1"></i>ID</th>
+                                    <th><i class="bi bi-card-text me-1"></i>Title</th>
+                                    <th><i class="bi bi-question-circle me-1"></i>Questions</th>
+                                    <th><i class="bi bi-gear me-1"></i>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="quiz : ${quizzes}">
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${quiz.id}">1</span>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${quiz.title}">Quiz Title</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info" th:text="${quiz.questions != null ? quiz.questions.size() : 0} + ' questions'">0 questions</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions'}" 
+                                               class="btn btn-outline-primary" title="Manage Questions">
+                                                <i class="bi bi-list-ul"></i>
+                                            </a>
+                                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/questions/add'}" 
+                                               class="btn btn-outline-success" title="Add Questions">
+                                                <i class="bi bi-plus-circle"></i>
+                                            </a>
+                                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/edit'}" 
+                                               class="btn btn-outline-warning" title="Edit Quiz">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a th:href="@{'/admin/quiz/' + ${quiz.id} + '/delete'}" 
+                                               class="btn btn-outline-danger" title="Delete Quiz"
+                                               onclick="return confirm('Are you sure you want to delete this quiz?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div th:if="${quizzes == null or quizzes.empty}" class="empty-state">
+                    <i class="bi bi-journal-text"></i>
+                    <h4>No quizzes found</h4>
+                    <p>Create your first quiz to get started with the learning platform!</p>
+                    <a href="/admin/quiz/add" class="btn-gradient">
+                        <i class="bi bi-plus-circle me-2"></i>Create First Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Study Notes Section -->
+        <div id="notes-section" class="dashboard-section hidden">
+            <div class="content-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-book me-2"></i>Study Notes Management</h4>
+                    <a href="/admin/notes/add" class="btn-gradient">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Note
+                    </a>
+                </div>
+
+                <div class="row" th:if="${notes != null and !notes.empty}">
+                    <div class="col-lg-4 col-md-6 mb-4" th:each="note : ${notes}">
+                        <div class="note-card">
+                            <h5 class="note-title" th:text="${note.title}">Note Title</h5>
+                            <div class="note-topic" th:text="${note.topic}">Topic</div>
+                            <p class="note-description" th:text="${note.description}">Description of the study material...</p>
+                                
+                            <div th:if="${note.videoUrl != null and !#strings.isEmpty(note.videoUrl)}" class="video-container mb-3">
+                                <div class="ratio ratio-16x9">
+                                    <iframe th:src="${note.videoUrl}" 
+                                            th:data-original-url="${note.videoUrl}"
+                                            class="video-embed"
+                                            title="Study Video"
+                                            allowfullscreen
+                                            loading="lazy">
+                                    </iframe>
+                                </div>
+                            </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        <span th:if="${note.createdDate != null}" 
+                                              th:text="${#temporals.format(note.createdDate, 'MMM dd, yyyy')}">Jan 01, 2024</span>
+                                        <span th:if="${note.createdDate == null}">Date not available</span>
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{'/admin/notes/' + ${note.id} + '/edit'}" 
+                                           class="btn btn-outline-warning" title="Edit Note">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{'/admin/notes/' + ${note.id} + '/delete'}" 
+                                           class="btn btn-outline-danger" title="Delete Note"
+                                           onclick="return confirm('Are you sure you want to delete this note?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${notes == null or notes.empty}" class="empty-state">
+                        <i class="bi bi-book"></i>
+                        <h4>No study notes found</h4>
+                        <p>Create study materials for students to help them learn better!</p>
+                        <a href="/admin/notes/add" class="btn-gradient">
+                            <i class="bi bi-plus-circle me-2"></i>Create First Note
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div id="feedback-section" class="dashboard-section hidden">
+            <div class="content-card">
+                <h4><i class="bi bi-chat-dots me-2"></i>User Feedback</h4>
+                
+                <div th:if="${feedbackList != null and !feedbackList.empty}">
+                    <div class="row">
+                        <div class="col-12" th:each="feedback : ${feedbackList}">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title" th:text="${feedback.userName != null ? feedback.userName : 'Anonymous'}">User Name</h6>
+                                    <p class="card-text" th:text="${feedback.message}">Feedback message...</p>
+                                    <small class="text-muted" th:if="${feedback.createdDate != null}" 
+                                           th:text="${#temporals.format(feedback.createdDate, 'MMM dd, yyyy HH:mm')}">Date</small>
+                                    <small class="text-muted" th:if="${feedback.createdDate == null}">Date not available</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${feedbackList == null or feedbackList.empty}" class="empty-state">
+                    <i class="bi bi-chat-dots"></i>
+                    <h4>No feedback received yet</h4>
+                    <p>User feedback will appear here when submitted.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Quizeria by Naman Jain</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showSection(sectionName, clickedButton) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.section-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+            
+            // Add active class to clicked button
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+            
+            // Special case for overview - reload page to get fresh data
+            if (sectionName === 'overview') {
+                location.reload();
+            }
+        }
+        
+        // Show success/error messages
+        function showMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv && alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Convert YouTube URLs to embed format
+            convertYouTubeUrls();
+            
+            // Check for active section from server
+            const activeSection = '[[${activeSection}]]';
+            if (activeSection && activeSection !== '') {
+                // Find and click the corresponding button
+                const targetButton = document.querySelector(`button[onclick*="showSection('${activeSection}')"]`);
+                if (targetButton) {
+                    showSection(activeSection, targetButton);
+                }
+            }
+            
+            // Show success/error messages
+            const successMessage = '[[${success}]]';
+            const errorMessage = '[[${error}]]';
+            
+            if (successMessage && successMessage !== '') {
+                showMessage(successMessage, 'success');
+            }
+            if (errorMessage && errorMessage !== '') {
+                showMessage(errorMessage, 'danger');
+            }
+        });
+        
+        // Convert YouTube URLs to embed format
+        function convertYouTubeUrls() {
+            const videos = document.querySelectorAll('.video-embed');
+            videos.forEach(video => {
+                const originalUrl = video.getAttribute('data-original-url');
+                if (originalUrl) {
+                    let embedUrl = originalUrl;
+                    
+                    // Convert youtube.com/watch?v= to embed format
+                    if (originalUrl.includes('youtube.com/watch?v=')) {
+                        const videoId = originalUrl.split('v=')[1].split('&')[0];
+                        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                    }
+                    // Convert youtu.be/ to embed format
+                    else if (originalUrl.includes('youtu.be/')) {
+                        const videoId = originalUrl.split('youtu.be/')[1].split('?')[0];
+                        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                    }
+                    
+                    video.src = embedUrl;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

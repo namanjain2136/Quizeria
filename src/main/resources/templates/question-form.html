@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title layout:fragment="title" th:text="${isEdit ? 'Edit Question - Quizeria' : 'Add Question - Quizeria'}">Question Form - Quizeria</title>
+    
+    <th:block layout:fragment="styles">
+    <style>
+        .preview-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .option-preview {
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .option-preview.correct {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+    </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h1 class="mb-2">
+                                <i class="bi bi-question-circle me-2" th:if="${!isEdit}"></i>
+                                <i class="bi bi-pencil-square me-2" th:if="${isEdit}"></i>
+                                <span th:text="${isEdit ? 'Edit Question' : 'Add New Question'}">Question Form</span>
+                            </h1>
+                            <p class="mb-0 text-muted" th:if="${quiz != null}" th:text="'Quiz: ' + ${quiz.title}">Quiz Title</p>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="${isEdit ? '/admin/quiz/' + quizId + '/questions/' + question.id + '/edit' : '/admin/quiz/' + quizId + '/questions/add'}" 
+                                  th:object="${question}" method="post">
+                                  
+                                <!-- Question Text -->
+                                <div class="form-floating mb-4">
+                                    <textarea class="form-control" 
+                                             th:field="*{text}" 
+                                             id="text" 
+                                             style="height: 120px;"
+                                             placeholder="Enter your question here..." 
+                                             required></textarea>
+                                    <label for="text">
+                                        <i class="bi bi-chat-text me-2"></i>Question Text
+                                    </label>
+                                </div>
+                                
+                                <!-- Options Grid -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:field="*{optionA}" 
+                                                   id="optionA" 
+                                                   placeholder="Option A"
+                                                   required>
+                                            <label for="optionA" class="text-primary">
+                                                <i class="bi bi-a-circle me-2"></i>Option A
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:field="*{optionB}" 
+                                                   id="optionB" 
+                                                   placeholder="Option B"
+                                                   required>
+                                            <label for="optionB" class="text-warning">
+                                                <i class="bi bi-b-circle me-2"></i>Option B
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:field="*{optionC}" 
+                                                   id="optionC" 
+                                                   placeholder="Option C"
+                                                   required>
+                                            <label for="optionC" class="text-info">
+                                                <i class="bi bi-c-circle me-2"></i>Option C
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   th:field="*{optionD}" 
+                                                   id="optionD" 
+                                                   placeholder="Option D"
+                                                   required>
+                                            <label for="optionD" class="text-success">
+                                                <i class="bi bi-d-circle me-2"></i>Option D
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Correct Answer -->
+                                <div class="form-floating mb-4">
+                                    <select class="form-select" th:field="*{correctOption}" id="correctOption" required>
+                                        <option value="">Select the correct option</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                    <label for="correctOption">
+                                        <i class="bi bi-check-circle me-2"></i>Correct Answer
+                                    </label>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a th:href="@{'/admin/quiz/' + ${quizId} + '/questions'}" 
+                                       class="btn btn-outline-primary me-md-2">
+                                        <i class="bi bi-arrow-left me-2"></i>Back to Questions
+                                    </a>
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        <span th:text="${isEdit ? 'Save Changes' : 'Add Question'}">Submit</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Card -->
+                    <div class="card mt-4 preview-card" id="preview-card" style="display: none;">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-eye me-2"></i>Question Preview
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="preview-content">
+                                <!-- Preview will be dynamically generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+    <script>
+        // Real-time preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const previewCard = document.getElementById('preview-card');
+            const previewContent = document.getElementById('preview-content');
+            
+            function updatePreview() {
+                const text = document.getElementById('text').value;
+                const optionA = document.getElementById('optionA').value;
+                const optionB = document.getElementById('optionB').value;
+                const optionC = document.getElementById('optionC').value;
+                const optionD = document.getElementById('optionD').value;
+                const correct = document.getElementById('correctOption').value;
+                
+                if (text.trim()) {
+                    previewCard.style.display = 'block';
+                    previewContent.innerHTML = `
+                        <p class="fw-bold mb-3">${text}</p>
+                        <div>
+                            <div class="option-preview ${correct === 'A' ? 'correct' : ''}">
+                                <span class="badge bg-primary me-2">A</span>${optionA || 'Option A...'}
+                                ${correct === 'A' ? '<i class="bi bi-check-circle-fill text-success float-end"></i>' : ''}
+                            </div>
+                            <div class="option-preview ${correct === 'B' ? 'correct' : ''}">
+                                <span class="badge bg-warning me-2">B</span>${optionB || 'Option B...'}
+                                ${correct === 'B' ? '<i class="bi bi-check-circle-fill text-success float-end"></i>' : ''}
+                            </div>
+                            <div class="option-preview ${correct === 'C' ? 'correct' : ''}">
+                                <span class="badge bg-info me-2">C</span>${optionC || 'Option C...'}
+                                ${correct === 'C' ? '<i class="bi bi-check-circle-fill text-success float-end"></i>' : ''}
+                            </div>
+                            <div class="option-preview ${correct === 'D' ? 'correct' : ''}">
+                                <span class="badge bg-success me-2">D</span>${optionD || 'Option D...'}
+                                ${correct === 'D' ? '<i class="bi bi-check-circle-fill text-success float-end"></i>' : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    previewCard.style.display = 'none';
+                }
+            }
+            
+            // Add event listeners to all form inputs
+            form.addEventListener('input', updatePreview);
+            form.addEventListener('change', updatePreview);
+        });
+    </script>
+    </th:block>
+</body>
+</html>
